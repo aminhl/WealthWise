@@ -1,5 +1,6 @@
 package com.nexthope.wealthwise_backend.user;
 
+import com.nexthope.wealthwise_backend.token.Token;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -36,6 +37,8 @@ public class User implements UserDetails {
     private LocalDateTime lastModifiedAt;
     private LocalDateTime lastLogin;
     private Boolean isActive;
+    @OneToMany(mappedBy = "user")
+    private List<Token> tokens;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
