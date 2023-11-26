@@ -2,6 +2,7 @@ package com.nexthope.wealthwise_backend.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Service
@@ -18,6 +22,8 @@ import java.util.function.Function;
 public class JwtService {
     @Value("${wealthwise.jwt.secret}")
     private String JWT_SECRET;
+    @Value("${wealthwise.jwt.expiration}")
+    private long JWT_EXPIRATION;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -51,5 +57,21 @@ public class JwtService {
 
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
+    }
+
+    public String generateToken(UserDetails userDetails){
+        return generateToken(new HashMap<>(), userDetails);
+    }
+
+    public String generateToken(Map<String, Objects> extraClaims,
+                                UserDetails userDetails) {
+        return Jwts
+                .builder()
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .setClaims(extraClaims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
+                .compact();
     }
 }
