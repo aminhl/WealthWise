@@ -1,5 +1,6 @@
 package com.nexthope.wealthwise_backend.config;
 
+import com.nexthope.wealthwise_backend.token.TokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +23,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final TokenRepository tokenRepository;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -36,7 +38,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String userEmail = jwtService.extractUsername(token);
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-            if (jwtService.isTokenValid(token, userDetails)){
+            boolean isTokenValid = tokenRepository.findTokenByToken(token)
+                    .map(accessToken -> !accessToken.isExpired() && accessToken.isRevoked())
+                    .orElse(false);
+            if (jwtService.isTokenValid(token, userDetails) && isTokenValid){
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
