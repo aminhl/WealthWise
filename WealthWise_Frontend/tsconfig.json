@@ -23,7 +23,7 @@
     ],
     "paths": {
       "@spartan-ng/ui-button-helm": [
-        ".\\src/app/components/spartan-ui/ui-button-helm/src/index.ts"
+        ".\\src/app/shared/components/spartan-ui/ui-button-helm/src/index.ts"
       ]
     }
   },
